@@ -1,0 +1,27 @@
+
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    {% include 'head.html' %}
+  </head>
+
+  <body>
+    <div class="container">
+        {% include 'header.html' %}
+
+      <div class="row marketing">
+        <div class="col-lg-6">
+          <img src="{{ url_for('static', filename = 'images/wally.jpg') }}" width="100%"/>
+        </div>
+
+        <div class="col-lg-6">
+          <h4>Sobre</h4>
+          <p>Wally é uma plataforma de localização indoor que permite que usuários de um local interajam com um mapa dinâmico e a exposição dos dados gerados nessa interação em um painel administrativo.</p>
+
+        </div>
+      </div>
+      {% include 'footer.html' %}
+    </div>
+  </body>
+</html>
+
