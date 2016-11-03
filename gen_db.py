@@ -2,6 +2,7 @@ from flask import Flask, render_template, json, request
 from flaskext.mysql import MySQL
 import sys
 from datetime import datetime, date, time
+import pandas as pd 
 
 ### Corrigindo problemas de encoding
 reload(sys)
@@ -12,7 +13,7 @@ app = Flask(__name__)
 
 # MySQL 
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '____'
+app.config['MYSQL_DATABASE_PASSWORD'] = '___'
 app.config['MYSQL_DATABASE_DB'] = 'Wally'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -28,21 +29,18 @@ CREATE TABLE Registros(
 """
 
 def build_insert_registro(userId, date, placeId, registroId=""):
-	msg = "insert into Registros values(\"" + str(registroId) + "\"," \
+	msg = "insert into Registros values(\'\'," \
 										  + str(userId) + ",\"" \
 										  + str(date) + "\"," \
 										  + str(placeId) + ")"
 	return msg
 
-
-
-
-"""
-insert into User values('','Admin','admin');
-"""
+def test_sql_to_pandas(conn):
+	tabela = pd.read_sql("select * from Registros;", conn)
+	print(tabela)
 
 if __name__ == "__main__":
-	#date = datetime("20/02/2016")
+
 	d = date(2005, 7, 14)
 	t = time(12, 30)
 	date_ = datetime.combine(d, t)
@@ -51,7 +49,9 @@ if __name__ == "__main__":
 
 	conn = mysql.connect()
 	cursor = conn.cursor()
-	cursor.execute(build_insert_registro(10, date_, 1, 2))
+	cursor.execute(build_insert_registro(10, date_, 1))
+
+	test_sql_to_pandas(conn)
 	conn.commit()
 	cursor.close() 
 	conn.close()
