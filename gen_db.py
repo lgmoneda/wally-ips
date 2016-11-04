@@ -13,7 +13,7 @@ app = Flask(__name__)
 
 # MySQL 
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '___'
+app.config['MYSQL_DATABASE_PASSWORD'] = '____'
 app.config['MYSQL_DATABASE_DB'] = 'Wally'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -41,15 +41,15 @@ def test_sql_to_pandas(conn):
 
 if __name__ == "__main__":
 
-	d = date(2005, 7, 14)
-	t = time(12, 30)
+	d = date(2016, 2, 11)
+	t = time(14, 45)
 	date_ = datetime.combine(d, t)
 	print(date_)
 	print(build_insert_registro(10, date_, 1))
 
 	conn = mysql.connect()
 	cursor = conn.cursor()
-	cursor.execute(build_insert_registro(10, date_, 1))
+	cursor.execute(build_insert_registro(14, date_, 3))
 
 	test_sql_to_pandas(conn)
 	conn.commit()

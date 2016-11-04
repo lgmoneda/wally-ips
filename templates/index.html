@@ -2,27 +2,29 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    {% include 'head.html' %}
+    {% include 'templates/head.html' %}
   </head>
 
   <body>
     <div class="container">
-        {% include 'header.html' %}
+        {% include 'templates/header.html' %}
 
       <div class="row marketing">
         <div class="col-sm-6">
-          <h4>Analytics</h4>
-          <p>Wooow! Such analysis!</p>
+          <h4>Análise</h4>
+          <p>Vários dados!</p>
+          {{ analytics }}
 
         </div>
 
         <div class="col-sm-6">
-          <h4>Analytics</h4>
-          <p>Wooow! Nice graphs!</p>
+          <h4>Gráficos</h4>
+          <p>E um gráfico!</p>
+          <img src="{{ graph1 }}" width="100%"/>
  
         </div>
       </div>
-      {% include 'footer.html' %}
+      {% include 'templates/footer.html' %}
     </div>
   </body>
 </html>

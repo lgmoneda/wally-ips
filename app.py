@@ -2,6 +2,12 @@ from flask import Flask, render_template, json, request
 from flaskext.mysql import MySQL
 from werkzeug import generate_password_hash, check_password_hash
 import sys
+from pandas_functions import *
+import seaborn as sns
+import numpy as np
+from jinja2 import Environment, FileSystemLoader
+import matplotlib.pyplot as plt
+from flask import Flask, make_response
 
 ### Corrigindo problemas de encoding
 reload(sys)
@@ -12,15 +18,39 @@ app = Flask(__name__)
 
 # MySQL 
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '___'
-app.config['MYSQL_DATABASE_DB'] = 'wally'
+app.config['MYSQL_DATABASE_PASSWORD'] = '____'
+app.config['MYSQL_DATABASE_DB'] = 'Wally'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
 
 @app.route('/')
 def main():
-    return render_template('index.html')
+	conn = mysql.connect()
+	df = get_registros_table(conn)
+	df = df.drop("registroId", 1)
+	df2 = pd.DataFrame()
+	df2["datas"] = df["date"].apply(lambda x : x.date())
+	df2["pessoas"] = 1
+	df2 = df2.groupby("datas")["pessoas"].sum()
+	print(df2)
+
+	#graph = sns.barplot(y="userId", x="date", data=df)
+	graph = sns.barplot(y=df2.values, x=df2.index)
+	plt.title("Quantidade de pessoas")
+	plt.ylim(0, max(df2.values)*1.1)
+	filepath = "static/images/plots/exemplo.png"
+	plt.savefig(filepath)
+
+	env = Environment(loader=FileSystemLoader('.'))
+	template = env.get_template("templates/index.html")
+
+	template_vars = {"analytics" : df.to_html(index=False),
+	            	 "graph1": filepath }
+
+	html_out = template.render(template_vars)
+	return html_out
+	#return render_template('index.html')
 
 @app.route('/sobre')
 def showSignUp():
@@ -58,6 +88,7 @@ def signUp():
     finally:
         cursor.close() 
         conn.close()
+
 
 if __name__ == "__main__":
     app.run(port=5002)
