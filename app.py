@@ -8,6 +8,11 @@ import numpy as np
 from jinja2 import Environment, FileSystemLoader
 import matplotlib.pyplot as plt
 from flask import Flask, make_response
+from flask import request
+
+
+
+
 
 ### Corrigindo problemas de encoding
 reload(sys)
@@ -24,33 +29,58 @@ app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
 
 
-@app.route('/')
+@app.route('/', methods=['POST','GET'])
 def main():
-	conn = mysql.connect()
-	df = get_registros_table(conn)
-	df = df.drop("registroId", 1)
-	df2 = pd.DataFrame()
-	df2["datas"] = df["date"].apply(lambda x : x.date())
-	df2["pessoas"] = 1
-	df2 = df2.groupby("datas")["pessoas"].sum()
-	print(df2)
 
-	#graph = sns.barplot(y="userId", x="date", data=df)
-	graph = sns.barplot(y=df2.values, x=df2.index)
-	plt.title("Quantidade de pessoas")
-	plt.ylim(0, max(df2.values)*1.1)
-	filepath = "static/images/plots/exemplo.png"
-	plt.savefig(filepath)
+    conn = mysql.connect()
 
-	env = Environment(loader=FileSystemLoader('.'))
-	template = env.get_template("templates/index.html")
+    stores_dropdown = get_stores_as_options(conn)
 
-	template_vars = {"analytics" : df.to_html(index=False),
-	            	 "graph1": filepath }
+    try:
+    	selected_stores = request.form['selected_stores'].split(",")
+    except:
+		selected_stores = stores_dropdown
 
-	html_out = template.render(template_vars)
-	return html_out
-	#return render_template('index.html')
+    #df = get_registros_table(conn)
+    
+    df = get_complete_table(conn)
+    df = df.drop("registroId", 1)
+    df = df[df["nome"].isin(selected_stores)]
+    filepath_each_serie = build_each_store_serie(df)
+
+
+    df2 = pd.DataFrame()
+    #df2["datas"] = df["date"].apply(lambda x : x.date())
+    df2["datas"] = df["date"]
+    df2["pessoas"] = 1
+    #df2.index = pd.to_datetime(df2.index)
+    df2 = df2.set_index('datas')
+    df2 = df2.resample('M', how='sum')
+    #df2 = df2.groupby("datas")["pessoas"].sum()
+    #df2 = df2.resample('M', how='sum')
+    print(df2)
+
+    #graph = sns.barplot(y="userId", x="date", data=df)
+    #graph = sns.barplot(y=df2.values, x=df2.index)
+    #graph = sns.tsplot(df2, time="datas", unit="pessoas")
+    graph = plt.plot(df2)
+    plt.title("Quantidade de pessoas")
+    plt.ylim(0, max(df2.values)*1.1)
+    filepath_aggregate = "static/images/plots/exemplo.png"
+    plt.savefig(filepath_aggregate)
+    plt.clf()
+
+    env = Environment(loader=FileSystemLoader('.'))
+    template = env.get_template("templates/index.html")
+
+    template_vars = {"analytics" : df.head(10).to_html(index=False),
+    				 "graph1": filepath_aggregate,
+    				 "graph2": filepath_each_serie,
+    				 "stores_dropdown": stores_dropdown }
+
+    html_out = template.render(template_vars)
+    return html_out
+    #return render_template('index.html')
 
 @app.route('/sobre')
 def showSignUp():

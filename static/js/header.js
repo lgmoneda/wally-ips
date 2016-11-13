@@ -3,7 +3,6 @@ $(document).ready(function() {
 	console.log('Path name:' + pathname);
 	//window.alert(pathname)
 
-
 	$('li[role="presentation"]').each(function( index ) {
 		if($(this).children().attr('href') == pathname) {
 			$(this).addClass("active")
