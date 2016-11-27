@@ -16,7 +16,7 @@ app = Flask(__name__)
 
 # MySQL 
 app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '____'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'cachorro'
 app.config['MYSQL_DATABASE_DB'] = 'Wally'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -45,9 +45,15 @@ def test_sql_to_pandas(conn):
 
 def random_date(start, end, hour_mean=12):
 	year = randint(start.year, end.year)
-	month = randint(1, 12)
+	if end.month >= start.month:
+		month = randint(start.month, end.month)
+	else:
+		options = [i in range(start.month, 13)] + [i in range(1, end.month + 1)]
+		month_index = randint(0, len(options))
+		month = options[month_index]
 	day = randint(1, 30)
-	hour = int(np.random.normal(loc=hour_mean, scale=4))
+	#hour = int(np.random.normal(loc=hour_mean, scale=4))
+	hour = randint(8, 22)
 	minute = randint(0, 59)
 
 	try:
@@ -78,10 +84,12 @@ def gen_data(startDate, endDate, placeIDs, n_registers, groupRange):
 		conn = mysql.connect()
 		cursor = conn.cursor()
 		msg = build_insert_registro(userId, date_, place)
-		print(msg)
+		if (i+1) % 500 == 0:
+			print("Foram inseridos {0} novos registros;".format(i))
+		#print(msg)
 		cursor.execute(msg)
 		conn.commit()
-
+	#print("Foram inseridos {0} novos registros no total;".format(i))
 
 
 
@@ -107,6 +115,9 @@ if __name__ == "__main__":
 	bourgeois_stores = [1, 3, 4, 6]
 	bourgeois_range = (24000, 25000)
 
+	others_stores = [7, 10, 15, 16, 17]
+	others_range = (25000, 27000)
+
 
 	d = date(2016, 2, 11)
 	t = time(14, 45)
@@ -122,25 +133,29 @@ if __name__ == "__main__":
 
 
 	### Criado os limites de data para gerar os dados
-	d = date(2012, 1, 1)
+	#d = date(2012, 1, 1)
+	### year - day - month
+	d = date(2016, 11, 1)
 	t = time(8, 0)
 	start = datetime.combine(d, t)
-	d = date(2016, 10, 11)
+	d = date(2016, 11, 30)
 	t = time(8, 0)
 	end = datetime.combine(d, t)
 	date_ = random_date(start, end)
 
-	gen_data(start, end, family_stores, 10, family_range)
+	gen_data(start, end, family_stores, 100, family_range)
 
-	gen_data(start, end, housewife_stores, 10, housewife_range)
+	gen_data(start, end, housewife_stores, 100, housewife_range)
 
-	gen_data(start, end, friends_stores, 30, friends_range)
+	gen_data(start, end, friends_stores, 300, friends_range)
 
-	gen_data(start, end, couple_stores, 20, couple_range)
+	gen_data(start, end, couple_stores, 200, couple_range)
 
-	gen_data(start, end, young_stores, 80, young_range)
+	gen_data(start, end, young_stores, 300, young_range)
 
 	gen_data(start, end, bourgeois_stores, 30, bourgeois_range)
+
+	gen_data(start, end, others_stores, 600, others_range)
 	#conn.commit()
 	cursor.close() 
 	conn.close()

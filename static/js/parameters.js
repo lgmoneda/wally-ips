@@ -5,16 +5,112 @@ $(document).ready(function() {
 
 	$( "#genRealTime" ).click(function() {
 	  texto = $('select#realTimeStores').val().join()
+	  time = $('select#realTimePeriod').val()
 
-	  alert(texto);  
-	  $.post( "/", { selected_stores: texto, time: "2pm" });
+	  //alert(texto);  
+	  //var resp = $.post( "/", { selected_stores: texto, time: time});
+	  //var obj = $.post( "/realtime", { selected_stores: texto, time: time});
+	  //alert(obj)
 
-      $('img').fadeOut('');
-      //$('img').attr('src', $('img').attr('src') + '?' + Math.random());
+	  $.post("/realtime", { selected_stores: texto, time: time}, function(response) {
+	  		
+	  		if(!response.valid) {
+	  			alert("Consulta sem retorno!");
+		      $('img').fadeOut(150);
+			  $('#tab1').find('img').each(function(){
+			  		$(this).attr('src', "static/images/wally.jpg");
+				});
+			  $('img').fadeIn(150);
+	  		}
+	  		else {
+	  				//alert(response.descriptive_dict.max)
+		  		   $("#realTimeGraph1").attr('src', response.graph1);
+	  		 	   $("#realTimeGraph2").attr('src', response.graph2);
+	  		 	   $("#max").text(response.descriptive_dict.max);
+	  		 	   $("#max_time").text(response.descriptive_dict.max_time);
+	  		 	   $("#unique_guests").text(response.descriptive_dict.unique_guests);
 
-      $('img').each(function(){
+	  		 	   /*
+	  			   $('img').fadeOut(800, function(){
+      					$(this).attr('src', $(this).attr('src') + '?' + Math.random()).bind('onreadystatechange load', function(){
+         					if (this.complete) $(this).fadeIn(800);
+     					 });
+   					});
+	  			
+	  			alert(response.graph2)
+	  			$('img').fadeOut(1500);
+	  			$("#realTimeGraph1").attr('src', response.graph1);
+	  			$("#realTimeGraph2").attr('src', response.graph2);
+	  			$('img').fadeIn(1000);
+	  			
+	  			$(this).attr('src', "static/images/wally.jpg");	
+	  			*/
+
+		      //$('img').fadeOut(1500);
+			  $('#tab1').find('img').each(function(){
+			  	$(this).fadeOut(150, function(){
+      					$(this).attr('src', $(this).attr('src') + '?' + Math.random()).bind('onreadystatechange load', function(){
+         					if (this.complete) $(this).fadeIn(800);
+     					 });
+   					});
+			  		//$(this).fadeOut(200);
+			  		//$(this).attr('src', $(this).attr('src') + '?' + Math.random());
+					//$(this).fadeIn(1000);
+				});
+			  //$('img').fadeIn(1000);
+			  
+				
+	  		}
+    	// Do something with the request
+		}, 'json');
+
+	  /*
+      $('img').fadeOut(1500);
+      $('#tab1').find('img').each(function(){
       		$(this).attr('src', $(this).attr('src') + '?' + Math.random());
     	});
-      $('img').fadeIn(500);
+      $('img').fadeIn(1000);
+		*/
+
+      //$("#tab1").toggle().toggle();
+      //$("#tab1_content").load(document.URL + " #tab1_content");
+      //$("#tab1_content").html("/#tab1_content");
+
+
 	});
+
+
+	function getSelectedTabIndex() { 
+    	return $("#TabList").tabs('option', 'selected');
+	}
+
+	$( "#tab2" ).click(function() {
+		//$.post( "/historico", { selected_stores: texto, time: "2pm" });
+
+	});
+
+	$("#tab2").on("click", function() {
+		aqui = getSelectedTabIndex()
+ 		alert(aqui);
+		});
+
+
+
+	$( "#genHistTime" ).click(function() {
+	  texto = $('select#histTimeStores').val().join()
+	  time = $('select#histTime').text()
+	  alert("eu vou a luta"); 
+	  alert(texto);  
+	  alert(time);    
+	  $.post( "/historico", { selected_stores: texto, time: time });
+
+     $('#tab2').find('img').fadeOut(1000);
+      //$('img').attr('src', $('img').attr('src') + '?' + Math.random());
+
+      $('#tab2').find('img').each(function(){
+      		$(this).attr('src', $(this).attr('src') + '?' + Math.random());
+    	});
+      $('#tab2').find('img').fadeIn(1000);
+	});
+
 });
