@@ -21,8 +21,8 @@ mysql = MySQL()
 app = Flask(__name__)
 
 # MySQL 
-app.config['MYSQL_DATABASE_USER'] = 'root'
-app.config['MYSQL_DATABASE_PASSWORD'] = '***REMOVED***'
+app.config['MYSQL_DATABASE_USER'] = 'wally-user'
+app.config['MYSQL_DATABASE_PASSWORD'] = 'ondeestou'
 app.config['MYSQL_DATABASE_DB'] = 'Wally'
 app.config['MYSQL_DATABASE_HOST'] = 'localhost'
 mysql.init_app(app)
@@ -32,6 +32,7 @@ mysql.init_app(app)
 def main():
 
     descriptive_dict = None
+    descriptive_dict_hist = None
     filepath_aggregate = None
     filepath_each_serie = None
 
@@ -51,10 +52,10 @@ def main():
         selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
         option = request.form['time']
 
-        if len(request.form['selected_stores']) > 1:
-    	   selected_stores = request.form['selected_stores'].split(",")
-        else:
-            selected_stores = request.form['selected_stores']
+        # if len(request.form['selected_stores']) > 1:
+    	   # selected_stores = request.form['selected_stores'].split(",")
+        # else:
+        #     selected_stores = request.form['selected_stores']
     except:
 		selected_stores = stores_dropdown
 
@@ -112,6 +113,7 @@ def main():
 
     
     template_vars = {"descriptive_dict": descriptive_dict,
+                     "descriptive_dict_hist": descriptive_dict,
     				 "graph1": filepath_aggregate,
     				 "graph2": filepath_each_serie,
                      "graph3": filepath_graph3,
@@ -145,12 +147,6 @@ def getRealTime():
         how = "10T"
     else:
         how = "H"
-
-    if len(request.form['selected_stores']) > 1:
-       selected_stores = request.form['selected_stores'].split(",")
-    else:
-        selected_stores = request.form['selected_stores']
-
 
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
     df = get_complete_table(conn)
@@ -206,68 +202,84 @@ def getRealTime():
 def getHistorico():
     print("ENTREI NO HISTORICO")
 
-    print(len(request.form))
-    print(request.form)
+
+
+    descriptive_dict_hist = None
+    filepath_aggregate = None
+    filepath_each_serie = None
+
+    option  = 0
+
+    start_date = request.form['start_date']
+    start_date = start_date.split("/")[2] + "-" + start_date.split("/")[0] + "-" + start_date.split("/")[1]
+
+    end_date = request.form['end_date']
+    end_date = end_date.split("/")[2] + "-" + end_date.split("/")[0] + "-" + end_date.split("/")[1]
+
+    print("Dates requestadas: {0} e {1}".format(start_date, end_date))
 
     conn = mysql.connect()
 
     stores_dropdown = get_stores_as_options(conn)
+    categories_dropdown = get_categories_as_options(conn)
 
-    try:
-        print("REQUEST STORES")
-        print(request.form['selected_stores'])
-        if len(request.form['selected_stores']) > 1:
-           selected_stores = request.form['selected_stores'].split(",")
-        else:
-            selected_stores = request.form['selected_stores']
-    except:
-        selected_stores = stores_dropdown
 
-    #df = get_registros_table(conn)
-    
+    how = "D"
+
+    selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
+
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
     df = df[df["nome"].isin(selected_stores)]
-    filepath_each_serie = build_each_store_serie(df, "historicalGraph1")
+    #df = realTimeFilters(df, option)
+
+    df = histTimeFilters(df, start_date, end_date)
+
+    if len(df) > 1:
+        valid_hist = True
+        filepath_each_serie = build_each_store_serie(df, 
+                                                     "histTimeGraph2.png", 
+                                                     "Visitantes ao longo do tempo para cada loja",
+                                                     True,
+                                                     how)
+        plt.clf()
+
+        filepath_graph3 = build_unique_bar(df, "histTimeGraph3.png", "Total de visitantes únicos no período", True)
+        
+        df["nome"] = "Todas as lojas selecioandas"
+        filepath_aggregate = build_each_store_serie(df, 
+                                                    "histTimeGraph1.png", 
+                                                    "Visitantes ao longo do tempo em todas as lojas selecionadas", 
+                                                    False,
+                                                    how)
+        
+        
+
+
+        descriptive_dict_hist = build_descriptive_dict(df, 'M')
+
+        plt.clf()
+
+    else:
+
+        valid_hist = False
+        descriptive_dict = {}
+        filepath_aggregate = "static/images/wally.jpg"
+        filepath_each_serie = "static/images/wally.jpg"
+        filepath_graph3 = "static/images/wally.jpg"
+        descriptive_dict_hist = None
+    valid_hist = True
     
-    plt.clf()
+    response = {"descriptive_dict_hist": descriptive_dict_hist,
+                 "graph1_hist": filepath_aggregate,
+                 "graph2_hist": filepath_each_serie,
+                 "graph3_hist": filepath_graph3,
+                 "stores_dropdown": stores_dropdown,
+                 "categories_dropdown": categories_dropdown,
+                 "valid_hist": valid_hist}
 
-    print("marcando")
-    df2 = pd.DataFrame()
-    #df2["datas"] = df["date"].apply(lambda x : x.date())
-    df2["datas"] = df["date"]
-    df2["userId"] = df["userId"]
-    df2["pessoas"] = 1
-    #df2.index = pd.to_datetime(df2.index)
-    df2 = df2.set_index('datas')
-    df2 = df2.resample('M').sum()
-    #df2 = df2.groupby("datas")["pessoas"].sum()
-    #df2 = df2.resample('M', how='sum')
-    descriptive_dict = build_descriptive_dict(df2)
-    #print(df2)
 
-    #graph = sns.barplot(y="userId", x="date", data=df)
-    #graph = sns.barplot(y=df2.values, x=df2.index)
-    #graph = sns.tsplot(df2, time="datas", unit="pessoas")
-    graph = plt.plot(df2["pessoas"])
-    plt.title("Quantidade de pessoas")
-    plt.ylim(0, max(df2["pessoas"].values)*1.1)
-    filepath_aggregate = "static/images/plots/realTimeGraph1.png"
-    plt.savefig(filepath_aggregate)
-    plt.clf()
-
-    env = Environment(loader=FileSystemLoader('.'))
-    template = env.get_template("templates/index.html")
-
-    template_vars = {"analytics_hist1" : df.head(5).to_html(index=False),
-                     "descriptive_dict": descriptive_dict,
-                     "graph1_hist": filepath_aggregate,
-                     "graph2": filepath_each_serie,
-                     "stores_dropdown": stores_dropdown }
-
-    html_out = template.render(template_vars)
-
-    return html_out
+    return jsonify(**response)
 
 
 
