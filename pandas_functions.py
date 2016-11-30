@@ -44,7 +44,7 @@ def build_aggregate_serie(df):
 
 def build_each_store_serie(df, filename, title=" ", legend=False, how='M'):
 	stores = df["nome"].unique()
-
+	print(df.head())
 
 	max_value = 0
 	final_xticks_labels = []
@@ -63,14 +63,14 @@ def build_each_store_serie(df, filename, title=" ", legend=False, how='M'):
 
 	
 		plt.plot(df2, label=store)
-
-
-
+	print(df2.head())
 
 	### WIN
 	import matplotlib.dates as mdates
-	timeFmt = mdates.DateFormatter('%H:%M')
-	ax.xaxis.set_major_formatter(timeFmt)
+	if how == "H":
+		print("\n\n\n\nFORMATAO")
+		timeFmt = mdates.DateFormatter('%H:%M')
+		ax.xaxis.set_major_formatter(timeFmt)
 
 	plt.title(title)
 	plt.xlabel("Horário")
@@ -103,6 +103,21 @@ def realTimeFilters(df, option=0):
 
 	return df
 
+def histTimeFilters(df, start, end):
+
+	#todays_data = [True if x.date() == datetime.today().date() else False for x in df["date"]]
+	df = df[(df["date"] > start) & (df["date"] < end)]
+	
+
+	# if option == 1:
+	# 	hour_data = [True if ( x.time() <= datetime.today().time() and
+	# 						   x.time() >= (datetime.today() - timedelta(minutes=60)).time()) else False for x in df["date"]]
+
+	# 	df = df[hour_data]
+	
+
+	return df
+
 def build_descriptive_dict(df, how='M'):
 
 	descriptive_dict = dict()
@@ -110,8 +125,11 @@ def build_descriptive_dict(df, how='M'):
 
 	df = df.set_index('date')
 	df = df.resample(how).sum()
-	descriptive_dict["max"] = df["pessoas"].max()
-	descriptive_dict["max_time"] = df["pessoas"].idxmax().strftime("%H:%M")
+	descriptive_dict["max"] = int(df["pessoas"].max())
+	if how != "M":
+		descriptive_dict["max_time"] = df["pessoas"].idxmax().strftime("%H:%M")
+	else:
+		descriptive_dict["max_time"] = df["pessoas"].idxmax()
 	
 
 	return descriptive_dict
@@ -139,7 +157,16 @@ def build_unique_bar(df, filename, title, legend):
 def return_selected_stores(query_string, all_stores, conn):
 
 	if  "cat_" not in query_string > 1:
-		selected_stores = query_string.split(",")
+		print(query_string)
+		print("," in query_string)
+		if "," in query_string:
+			selected_stores = query_string.split(",")
+		else:
+			selected_stores = []
+			selected_stores.append(query_string)
+		return selected_stores
+
+			
 	else:
 		selected_stores = query_string[4:]
 		if selected_stores == "Todas":
