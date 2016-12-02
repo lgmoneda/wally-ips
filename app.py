@@ -148,6 +148,8 @@ def getRealTime():
     else:
         how = "H"
 
+    print("REQUESTAO")
+    print(request.form['selected_stores'])
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
@@ -200,9 +202,7 @@ def getRealTime():
 
 @app.route('/historical', methods=['POST','GET'])
 def getHistorico():
-    print("ENTREI NO HISTORICO")
-
-
+    print("HISTORICAL POST!")
 
     descriptive_dict_hist = None
     filepath_aggregate = None
@@ -225,12 +225,6 @@ def getHistorico():
     else:
         how = "D"
 
-        
-    print("HOW ESCOLHIDO: ")
-    print(how)
-
-    print("Days between: {0}".format(days_between))
-    print("Dates requestadas: {0} e {1}".format(start_date, end_date))
 
     conn = mysql.connect()
 
@@ -298,7 +292,19 @@ def getHistorico():
 
 @app.route('/heatmap', methods=['POST','GET'])
 def getHeatMap():
-    pass
+    print("HEATMAP POST")
+    conn = mysql.connect()
+    stores_dropdown = get_stores_as_options(conn)
+    df = get_complete_table(conn)
+    df = df.drop("registroId", 1)
+    build_heat_map(df)
+
+    response = {"heatmap_img": 2,
+                "test": 3}
+
+
+    return jsonify(**response)
+    
 
 @app.route('/similarstores', methods=['POST','GET'])
 def getStoresCorr():
