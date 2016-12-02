@@ -1,0 +1,29 @@
+            <div class="row marketing"> 
+            <div class="col-sm-4">
+                Para um cliente que frequenta: 
+            </div>
+                <div class="col-sm-4">
+                   <select id="recommender" class="selectpicker" data-style="btn-primary" data-live-search="true" multiple title="Selecione o local">
+                      <optgroup label="Lojas" data-max-options="3">
+                        {% for store in stores_dropdown %}
+                          <option value="{{ store }}">{{ store }}</option>
+                        {% endfor %}
+                      </optgroup>
+                   </select>
+                </div>
+
+                <div class="col-sm-4" align="center">
+                    <button id="genRecommender" type="button" class="btn btn-default">Gerar</button>
+                </div>
+            </div>
+
+             <div hidden id="tab6_content">
+                <div class="row marketing">
+                    <h4>Lojas sugeridas: </h4>
+                    <div id="storesdiv" class="col-sm-12"> 
+                      <img id="realTimeGraph1" src="{{ graph1 }}" width="100%"/>
+                    </div>
+            </div>
+            </div>
+
+

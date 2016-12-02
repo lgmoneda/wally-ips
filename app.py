@@ -216,6 +216,20 @@ def getHistorico():
     end_date = request.form['end_date']
     end_date = end_date.split("/")[2] + "-" + end_date.split("/")[0] + "-" + end_date.split("/")[1]
 
+    days_between = (datetime.strptime(end_date, "%Y-%m-%d").date() - datetime.strptime(start_date, "%Y-%m-%d").date()).days
+    
+    if days_between > 90 and days_between < 270:
+        how = "W"
+    elif days_between >= 270:
+        how = "M"
+    else:
+        how = "D"
+
+        
+    print("HOW ESCOLHIDO: ")
+    print(how)
+
+    print("Days between: {0}".format(days_between))
     print("Dates requestadas: {0} e {1}".format(start_date, end_date))
 
     conn = mysql.connect()
@@ -224,7 +238,7 @@ def getHistorico():
     categories_dropdown = get_categories_as_options(conn)
 
 
-    how = "D"
+    
 
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
 
@@ -256,8 +270,8 @@ def getHistorico():
         
 
 
-        descriptive_dict_hist = build_descriptive_dict(df, 'M')
-
+        descriptive_dict_hist = build_descriptive_dict(df, how)
+        #strftime
         plt.clf()
 
     else:
@@ -281,6 +295,43 @@ def getHistorico():
 
     return jsonify(**response)
 
+
+@app.route('/heatmap', methods=['POST','GET'])
+def getHeatMap():
+    pass
+
+@app.route('/similarstores', methods=['POST','GET'])
+def getStoresCorr():
+    print("SIMILAR STORES POST!")
+    conn = mysql.connect()
+    stores_dropdown = get_stores_as_options(conn)
+    df = get_complete_table(conn)
+    df = df.drop("registroId", 1)
+    corr_file = build_corr(df)
+
+    #df = histTimeFilters(df, start_date, end_date)
+    response = {"heatmap_file": corr_file}
+
+
+    return jsonify(**response)
+
+
+@app.route('/recommender', methods=['POST','GET'])
+def getRecommender():
+    print("RECOMMENDER POST!")
+    conn = mysql.connect()
+    stores_dropdown = get_stores_as_options(conn)
+    df = get_complete_table(conn)
+    df = df.drop("registroId", 1)
+    #corr_file = build_corr(df)
+    selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
+    recommended_stores = recommend(df, selected_stores)
+    #df = histTimeFilters(df, start_date, end_date)
+    response = {"stores": recommended_stores}
+
+
+    return jsonify(**response)
+    
 
 
 @app.route('/sobre')

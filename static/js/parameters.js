@@ -161,4 +161,53 @@ $(document).ready(function() {
 
 	});
 
+	$( "#genSimilarStores" ).click(function() {
+
+		$.post("/similarstores", { selected_stores: texto, start_date: start, end_date: end}, function(response) {
+	 	   if(!$("#similar_content").is(":visible")) 
+	 	   		$("#similar_content").show()
+
+	 	   	$("#stores").attr('src', response.heatmap_file);
+
+		  $('#tab5').find('img').each(function(){
+		  	$(this).fadeOut(150, function(){
+  					$(this).attr('src', $(this).attr('src') + '?' + Math.random()).bind('onreadystatechange load', function(){
+     					if (this.complete) $(this).fadeIn(800);
+ 					 });
+					});
+			});
+		}, 'json');
+
+		// $("#heatTimer").show();
+		// $("#heatTimer").addClass("active");
+		// $("#floor_1").attr('src', "static/images/floor_1_clean.png");
+		// $("#floor_2").attr("src", "static/images/floor_2_clean.png");
+		// $("#heat_content").show();
+
+	});
+
+
+		$( "#genRecommender" ).click(function() {
+			texto = $('select#recommender').val().join()
+			$.post("/recommender", { selected_stores: texto, start_date: start, end_date: end}, function(response) {
+		 	   if(!$("#tab6_content").is(":visible")) 
+		 	   		$("#tab6_content").show()
+
+			$('#tab6').find('img').each(function(){
+		  		$(this).fadeOut(150) 
+		  		$(this).remove()
+			});
+
+			var i;
+			for (i = 0; i < response.stores.length; ++i) {
+			    var img = $('<img id="dynamic" width="20px">'); //Equivalent: $(document.createElement('img'))
+				img.attr('src', response.stores[i]);
+				img.attr('width', "70px");
+				img.appendTo('#storesdiv');
+				$("#storesdiv").append("   ");
+			}
+
+	});
+		});
+
 });

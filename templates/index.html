@@ -12,9 +12,9 @@
         <li class="active"><a data-toggle="tab" href="#tab1">Tempo Real</a></li>
         <li value="1"><a data-toggle="tab" href="#tab2">Mapa de Calor</a></li>
         <li><a data-toggle="tab" href="#tab3">Histórico</a></li>
-        <li><a data-toggle="tab" href="#tab4">Previsão</a></li>
-        <li><a data-toggle="tab" href="#tab5">Lojas Similares</a></li>
-        <li><a data-toggle="tab" href="#tab6">Marketing</a></li>
+        <!-- <li><a data-toggle="tab" href="#tab4">Previsão</a></li>-->
+        <li><a data-toggle="tab" href="#tab5">Lojas Relacionadas</a></li> 
+        <li><a data-toggle="tab" href="#tab6">Recomendação</a></li>
       </ul>
 
       <div class="tab-content">
@@ -33,36 +33,19 @@
             {% include 'templates/historical.html' %}
         </div>
 
+        <!--
         <div id="tab4" class="tab-pane fade">
             {% include 'templates/forecast.html' %}
         </div>
+        -->
 
         <div id="tab5" class="tab-pane fade">
-          <div class="row marketing">
-              <div class="col-sm-8">
-                <h4>Correlação</h4>
-              </div>
-
-              <div class="col-sm-4">
-                <h4>Análise</h4>
-              </div>
-            </div>
+            {% include 'templates/stores.html' %}
         </div>
 
-
-          <div id="tab5" class="tab-pane fade">
-          <div class="row marketing">
-              <div class="col-sm-8">
-                <h4>Marketing</h4>
-              </div>
-
-              <div class="col-sm-4">
-                <h4>Análise</h4>
-              </div>
-            </div>
+         <div id="tab6" class="tab-pane fade">
+            {% include 'templates/recommender.html' %}
         </div>
-
-
 
       </div> 
       
