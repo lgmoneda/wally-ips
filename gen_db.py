@@ -7,7 +7,7 @@ from datetime import timedelta
 from random import randint
 import numpy as np
 
-### Corrigindo problemas de encoding
+### Fixing encoding problems
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
@@ -44,6 +44,8 @@ def test_sql_to_pandas(conn):
 
 
 def random_date(start, end, hour_mean=12):
+        "Create random date considering stores working hours"
+        
 	year = randint(start.year, end.year)
 	if end.month >= start.month:
 		month = randint(start.month, end.month)
@@ -73,9 +75,9 @@ def random_date2(start, end):
 	print(new_date)
 	return new_date
 
-### Gerando dados para o grupo familia
-def gen_data(startDate, endDate, placeIDs, n_registers, groupRange):
 
+def gen_data(startDate, endDate, placeIDs, n_registers, groupRange):
+        "Generates data in a date range for certains IDs"
 	for i in range(n_registers):
 		userId = randint(groupRange[0], groupRange[1])
 		place = placeIDs[randint(0, len(placeIDs) - 1)]
@@ -86,7 +88,7 @@ def gen_data(startDate, endDate, placeIDs, n_registers, groupRange):
 		msg = build_insert_registro(userId, date_, place)
 		if (i+1) % 500 == 0:
 			print("Foram inseridos {0} novos registros;".format(i))
-		#print(msg)
+		
 		cursor.execute(msg)
 		conn.commit()
 	#print("Foram inseridos {0} novos registros no total;".format(i))
@@ -95,8 +97,8 @@ def gen_data(startDate, endDate, placeIDs, n_registers, groupRange):
 
 
 if __name__ == "__main__":
-
-	### Lista com os IDs de lojas para familias
+        
+	Lists with store IDs for each group 
 	family_stores = [2, 11, 13, 18]
 	family_range = (1, 10000)
 
@@ -118,23 +120,16 @@ if __name__ == "__main__":
 	others_stores = [7, 10, 15, 16, 17]
 	others_range = (25000, 27000)
 
-
 	d = date(2016, 2, 11)
 	t = time(14, 45)
 	date_ = datetime.combine(d, t)
-	print(date_)
-	print(build_insert_registro(10, date_, 1))
 
 	conn = mysql.connect()
 	cursor = conn.cursor()
-	#cursor.execute(build_insert_registro(14, date_, 3))
 
 	test_sql_to_pandas(conn)
 
-
-	### Criado os limites de data para gerar os dados
-	#d = date(2012, 1, 1)
-	### year - day - month
+	### Creating date limits to generate artificial data 
 	d = date(2016, 12, 1)
 	t = time(8, 0)
 	start = datetime.combine(d, t)

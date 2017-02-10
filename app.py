@@ -13,14 +13,14 @@ from flask import request
 import json
 
 
-### Corrigindo problemas de encoding
+### Fixing encoding problems
 reload(sys)
 sys.setdefaultencoding("utf-8")
 
 mysql = MySQL()
 app = Flask(__name__)
 
-# MySQL 
+### MySQL 
 app.config['MYSQL_DATABASE_USER'] = 'wally-user'
 app.config['MYSQL_DATABASE_PASSWORD'] = 'ondeestou'
 app.config['MYSQL_DATABASE_DB'] = 'Wally'
@@ -31,12 +31,14 @@ mysql.init_app(app)
 @app.route('/', methods=['POST', 'GET'])
 def main():
 
+    ### Guarantee they're defined
     descriptive_dict = None
     descriptive_dict_hist = None
     filepath_aggregate = None
     filepath_each_serie = None
+    filepath_graph3 = None
 
-
+    
     option = 0
     conn = mysql.connect()
 
@@ -51,29 +53,28 @@ def main():
     try:
         selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
         option = request.form['time']
-
-        # if len(request.form['selected_stores']) > 1:
-    	   # selected_stores = request.form['selected_stores'].split(",")
-        # else:
-        #     selected_stores = request.form['selected_stores']
     except:
-		selected_stores = stores_dropdown
+        selected_stores = stores_dropdown
 
 
     
     df = get_complete_table(conn)
+    print(df.describe())
     df = df.drop("registroId", 1)
     df = df[df["nome"].isin(selected_stores)]
+    print(df.describe())
     df = realTimeFilters(df, option)
+    print(df.describe())
     df_ori = df.copy()
-
-    filepath_graph3 = build_unique_bar(df, 
-                                       "realTimeGraph3.png", 
-                                       "Total de visitantes únicos no período", 
-                                       True)
+    
     plt.clf()
     if len(df) > 1:
         valid = True
+        filepath_graph3 = build_unique_bar(df, 
+                                       "realTimeGraph3.png", 
+                                       "Total de visitantes únicos no período", 
+                                       True)
+
         filepath_each_serie = build_each_store_serie(df, 
                                                      "realTimeGraph2.png", 
                                                      "Visitantes ao longo do tempo para cada loja",
@@ -105,9 +106,6 @@ def main():
         filepath_each_serie = "static/images/wally.jpg"
 
     
-    
-
-
     env = Environment(loader=FileSystemLoader('.'))
     template = env.get_template("templates/index.html")
 
@@ -123,8 +121,7 @@ def main():
 
     html_out = template.render(template_vars)
     return html_out
-    #return render_template('index.html')
-
+        
 
 
 @app.route('/realtime', methods=['POST','GET'])
@@ -134,7 +131,6 @@ def getRealTime():
     descriptive_dict = None
     filepath_aggregate = None
     filepath_each_serie = None
-
 
     option = request.form['time']
     conn = mysql.connect()
@@ -148,8 +144,6 @@ def getRealTime():
     else:
         how = "H"
 
-    print("REQUESTAO")
-    print(request.form['selected_stores'])
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
@@ -202,7 +196,6 @@ def getRealTime():
 
 @app.route('/historical', methods=['POST','GET'])
 def getHistorico():
-    print("HISTORICAL POST!")
 
     descriptive_dict_hist = None
     filepath_aggregate = None
@@ -225,22 +218,17 @@ def getHistorico():
     else:
         how = "D"
 
-
     conn = mysql.connect()
 
     stores_dropdown = get_stores_as_options(conn)
     categories_dropdown = get_categories_as_options(conn)
 
 
-    
-
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
 
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
     df = df[df["nome"].isin(selected_stores)]
-    #df = realTimeFilters(df, option)
-
     df = histTimeFilters(df, start_date, end_date)
 
     if len(df) > 1:
@@ -265,7 +253,6 @@ def getHistorico():
 
 
         descriptive_dict_hist = build_descriptive_dict(df, how)
-        #strftime
         plt.clf()
 
     else:
@@ -292,7 +279,7 @@ def getHistorico():
 
 @app.route('/heatmap', methods=['POST','GET'])
 def getHeatMap():
-    print("HEATMAP POST")
+    
     conn = mysql.connect()
     stores_dropdown = get_stores_as_options(conn)
     df = get_complete_table(conn)
@@ -302,80 +289,41 @@ def getHeatMap():
     response = {"heatmap_img": 2,
                 "test": 3}
 
-
     return jsonify(**response)
     
 
 @app.route('/similarstores', methods=['POST','GET'])
 def getStoresCorr():
-    print("SIMILAR STORES POST!")
+    
     conn = mysql.connect()
     stores_dropdown = get_stores_as_options(conn)
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
     corr_file = build_corr(df)
 
-    #df = histTimeFilters(df, start_date, end_date)
     response = {"heatmap_file": corr_file}
-
 
     return jsonify(**response)
 
 
 @app.route('/recommender', methods=['POST','GET'])
 def getRecommender():
-    print("RECOMMENDER POST!")
+
     conn = mysql.connect()
     stores_dropdown = get_stores_as_options(conn)
     df = get_complete_table(conn)
     df = df.drop("registroId", 1)
-    #corr_file = build_corr(df)
     selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
     recommended_stores = recommend(df, selected_stores)
-    #df = histTimeFilters(df, start_date, end_date)
+
     response = {"stores": recommended_stores}
 
 
     return jsonify(**response)
     
-
-
 @app.route('/sobre')
 def showSignUp():
     return render_template('sobre.html')
-
-
-@app.route('/signUp',methods=['POST','GET'])
-def signUp():
-    try:
-        _name = request.form['inputName']
-        _email = request.form['inputEmail']
-        _password = request.form['inputPassword']
-
-        # validate the received values
-        if _name and _email and _password:
-            
-            # All Good, let's call MySQL
-            
-            conn = mysql.connect()
-            cursor = conn.cursor()
-            _hashed_password = generate_password_hash(_password)
-            cursor.callproc('sp_createUser',(_name,_email,_hashed_password))
-            data = cursor.fetchall()
-
-            if len(data) is 0:
-                conn.commit()
-                return json.dumps({'message':'User created successfully !'})
-            else:
-                return json.dumps({'error':str(data[0])})
-        else:
-            return json.dumps({'html':'<span>Enter the required fields</span>'})
-
-    except Exception as e:
-        return json.dumps({'error':str(e)})
-    finally:
-        cursor.close() 
-        conn.close()
 
 
 if __name__ == "__main__":

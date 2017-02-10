@@ -1,0 +1,35 @@
+name: webdev
+dependencies:
+- click=6.6=py27_0
+- flask=0.11.1=py27_0
+- itsdangerous=0.24=py27_0
+- jinja2=2.8=py27_1
+- markupsafe=0.23=py27_2
+- openssl=1.0.2j=0
+- pip=8.1.2=py27_0
+- python=2.7.12=1
+- readline=6.2=2
+- setuptools=27.2.0=py27_0
+- sqlite=3.13.0=0
+- tk=8.5.18=0
+- werkzeug=0.11.11=py27_0
+- wheel=0.29.0=py27_0
+- zlib=1.2.8=3
+- pip:
+  - cycler==0.10.0
+  - django==1.10.4
+  - flask-mysql==1.4.0
+  - image==1.5.5
+  - matplotlib==1.5.3
+  - numpy==1.11.2
+  - pandas==0.19.1
+  - pillow==3.4.2
+  - pymysql==0.7.9
+  - pyparsing==2.1.10
+  - python-dateutil==2.5.3
+  - pytz==2016.7
+  - scipy==0.18.1
+  - seaborn==0.7.1
+  - six==1.10.0
+prefix: /home/lgmoneda/anaconda/envs/webdev
+
