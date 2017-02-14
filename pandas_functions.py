@@ -205,35 +205,36 @@ def build_descriptive_graphs(df, how):
         return filepath_each_serie, filepath_graph3, filepath_aggregate, descriptive_dict_hist
 
 def one_hot_encoding(df, columns, keep=False):
-    """ 
-    Transform categorical data to the one hot encoding representation. 
-    Parameters
-    ----------
-    df: pandas.DataFrame
-        The entire dataframe in which the categorical data is present. 
-    columns: string list
-        A list containing all categorical data columns names.
-    keep: boolean
-        Chooses if the categorical columns will be kept or dropped.
-    Returns
-    -------
-    df: pandas.DataFrame
-        The new dataframe with the categorical columns.
-    ohe_columns: string list
-        A list with the new columns names.
-    Example
-    -------
-    data = pd.DataFrame({"Product Category": ["cellphone", "TV", "refrigerator", "notebook"], 
-                      "Year": ["2008", "2009", "2013", "2016"]})
-    data, categorical_features = onehot_encoding(data, ["Product Category","Year"])
-    """
-    ohe_data = pd.get_dummies(df[columns])
-    ohe_columns = ohe_data.columns
-    
-    if not keep:
-        df = df.drop(columns, axis=1)
-    df = df.join(ohe_data)
-    return df, list(ohe_columns.values)
+        """ 
+        Transform categorical data to the one hot encoding representation. 
+        Parameters
+        ----------
+        df: pandas.DataFrame
+            The entire dataframe in which the categorical data is present. 
+        columns: string list
+            A list containing all categorical data columns names.
+        keep: boolean
+            Chooses if the categorical columns will be kept or dropped.
+        Returns
+        -------
+        
+            The new dataframe with the categorical columns.
+        ohe_columns: string list
+            A list with the new columns names.
+        Example
+        -------
+        data = pd.DataFrame({"Product Category": ["cellphone", "TV", "refrigerator", "notebook"], 
+                          "Year": ["2008", "2009", "2013", "2016"]})
+        data, categorical_features = onehot_encoding(data, ["Product Category","Year"])
+        """
+        ohe_data = pd.get_dummies(df[columns])
+        ohe_columns = ohe_data.columns
+
+        if not keep:
+            df = df.drop(columns, axis=1)
+
+        df = df.join(ohe_data)
+        return df, list(ohe_columns.values)
 
 
 def build_corr(df):
