@@ -40,23 +40,17 @@ def main():
 
     
     option = 0
+    ### Info to feed options
     conn = mysql.connect()
-
     stores_dropdown = get_stores_as_options(conn)
     categories_dropdown = get_categories_as_options(conn)
 
-    if option == "1":
-        how = "10T"
-    else:
-        how = "H"
-
+    how = "H"
     try:
         selected_stores = return_selected_stores(request.form['selected_stores'], stores_dropdown, conn)
         option = request.form['time']
     except:
         selected_stores = stores_dropdown
-
-
     
     df = get_complete_table(conn)
     print(df.describe())
@@ -70,35 +64,7 @@ def main():
     plt.clf()
     if len(df) > 1:
         valid = True
-        filepath_graph3 = build_unique_bar(df, 
-                                       "realTimeGraph3.png", 
-                                       "Total de visitantes únicos no período", 
-                                       True)
-
-        filepath_each_serie = build_each_store_serie(df, 
-                                                     "realTimeGraph2.png", 
-                                                     "Visitantes ao longo do tempo para cada loja",
-                                                     True,
-                                                     how)
-        plt.clf()
-
-        filepath_graph3 = build_unique_bar(df_ori, 
-                                           "realTimeGraph3.png", 
-                                           "Total de visitantes únicos no período", 
-                                           True)
-
-        df["nome"] = "Todas as lojas selecioandas"
-        filepath_aggregate = build_each_store_serie(df, 
-                                                    "realTimeGraph1.png", 
-                                                    "Visitantes ao longo do tempo em todas as lojas selecionadas", 
-                                                    False,
-                                                    how)
-        
-
-        descriptive_dict = build_descriptive_dict(df, 'H')
-
-
-        plt.clf()
+        filepath_each_serie, filepath_graph3, filepath_aggregate, descriptive_dict_hist = build_descriptive_graphs(df, how)
     else:
         valid = False
         descriptive_dict = {}
@@ -112,10 +78,10 @@ def main():
     
     template_vars = {"descriptive_dict": descriptive_dict,
                      "descriptive_dict_hist": descriptive_dict,
-    				 "graph1": filepath_aggregate,
-    				 "graph2": filepath_each_serie,
+                     "graph1": filepath_aggregate,
+                     "graph2": filepath_each_serie,
                      "graph3": filepath_graph3,
-    				 "stores_dropdown": stores_dropdown,
+                     "stores_dropdown": stores_dropdown,
                      "categories_dropdown": categories_dropdown,
                      "valid": valid}
 
@@ -133,11 +99,11 @@ def getRealTime():
     filepath_each_serie = None
 
     option = request.form['time']
-    conn = mysql.connect()
 
+    ### Info to feed options
+    conn = mysql.connect()
     stores_dropdown = get_stores_as_options(conn)
     categories_dropdown = get_categories_as_options(conn)
-
 
     if option == "1":
         how = "10T"
@@ -149,33 +115,13 @@ def getRealTime():
     df = df.drop("registroId", 1)
     df = df[df["nome"].isin(selected_stores)]
     df = realTimeFilters(df, option)
+
+    
     if len(df) > 1:
         valid = True
-        filepath_each_serie = build_each_store_serie(df, 
-                                                     "realTimeGraph2.png", 
-                                                     "Visitantes ao longo do tempo para cada loja",
-                                                     True,
-                                                     how)
-        plt.clf()
-
-        filepath_graph3 = build_unique_bar(df, "realTimeGraph3.png", "Total de visitantes únicos no período", True)
-        
-        df["nome"] = "Todas as lojas selecioandas"
-        filepath_aggregate = build_each_store_serie(df, 
-                                                    "realTimeGraph1.png", 
-                                                    "Visitantes ao longo do tempo em todas as lojas selecionadas", 
-                                                    False,
-                                                    how)
-        
-        
-
-
-        descriptive_dict = build_descriptive_dict(df, 'H')
-
-        plt.clf()
-
+        filepath_each_serie, filepath_graph3, filepath_aggregate, descriptive_dict_hist = build_descriptive_graphs(df, how)
     else:
-
+        ### When there's not data, we define place holders.
         valid = False
         descriptive_dict = {}
         filepath_aggregate = "static/images/wally.jpg"
@@ -218,8 +164,9 @@ def getHistorico():
     else:
         how = "D"
 
+        
+    ### Info to feed options
     conn = mysql.connect()
-
     stores_dropdown = get_stores_as_options(conn)
     categories_dropdown = get_categories_as_options(conn)
 
@@ -233,36 +180,17 @@ def getHistorico():
 
     if len(df) > 1:
         valid_hist = True
-        filepath_each_serie = build_each_store_serie(df, 
-                                                     "histTimeGraph2.png", 
-                                                     "Visitantes ao longo do tempo para cada loja",
-                                                     True,
-                                                     how)
-        plt.clf()
-
-        filepath_graph3 = build_unique_bar(df, "histTimeGraph3.png", "Total de visitantes únicos no período", True)
-        
-        df["nome"] = "Todas as lojas selecioandas"
-        filepath_aggregate = build_each_store_serie(df, 
-                                                    "histTimeGraph1.png", 
-                                                    "Visitantes ao longo do tempo em todas as lojas selecionadas", 
-                                                    False,
-                                                    how)
-        
-        
-
-
-        descriptive_dict_hist = build_descriptive_dict(df, how)
-        plt.clf()
-
+        filepath_each_serie, filepath_graph3, filepath_aggregate, descriptive_dict_hist = build_descriptive_graphs(df, how)
     else:
 
+        ### When there's not data, we define place holders.
         valid_hist = False
         descriptive_dict = {}
         filepath_aggregate = "static/images/wally.jpg"
         filepath_each_serie = "static/images/wally.jpg"
         filepath_graph3 = "static/images/wally.jpg"
         descriptive_dict_hist = None
+
     valid_hist = True
     
     response = {"descriptive_dict_hist": descriptive_dict_hist,
@@ -317,7 +245,6 @@ def getRecommender():
     recommended_stores = recommend(df, selected_stores)
 
     response = {"stores": recommended_stores}
-
 
     return jsonify(**response)
     

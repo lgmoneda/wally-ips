@@ -180,6 +180,30 @@ def return_selected_stores(query_string, all_stores, conn):
 			return list(table["nome"].values)
 
 
+def build_descriptive_graphs(df, how):
+        
+        filepath_each_serie = build_each_store_serie(df, 
+                                                     "histTimeGraph2.png", 
+                                                     "Visitantes ao longo do tempo para cada loja",
+                                                     True,
+                                                     how)
+        plt.clf()
+
+        filepath_graph3 = build_unique_bar(df, "histTimeGraph3.png", "Total de visitantes únicos no período", True)
+        
+        df["nome"] = "Todas as lojas selecioandas"
+        filepath_aggregate = build_each_store_serie(df, 
+                                                    "histTimeGraph1.png", 
+                                                    "Visitantes ao longo do tempo em todas as lojas selecionadas", 
+                                                    False,
+                                                    how)
+        
+        
+        descriptive_dict_hist = build_descriptive_dict(df, how)
+        plt.clf()
+
+        return filepath_each_serie, filepath_graph3, filepath_aggregate, descriptive_dict_hist
+
 def one_hot_encoding(df, columns, keep=False):
     """ 
     Transform categorical data to the one hot encoding representation. 
